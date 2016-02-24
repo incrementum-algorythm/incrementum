@@ -1,0 +1,5 @@
+incrementum-qt usr/bin
+share/pixmaps/bitcoin32.xpm usr/share/pixmaps
+share/pixmaps/bitcoin80.xpm usr/share/pixmaps
+debian/incrementum-qt.desktop usr/share/applications
+debian/incrementum-qt.protocol usr/share/kde4/services/
