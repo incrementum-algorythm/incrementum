@@ -1132,7 +1132,7 @@ void MapPort()
 // The first name is used as information source for addrman.
 // The second name should resolve to a list of seed addresses.
 static const char *strDNSSeed[][2] = {
-{"DrippidyDrop", "178.21.116.54"},
+    {"incrementum-dns-seed", "5.101.112.58"}
 };
 
 void ThreadDNSAddressSeed(void* parg)
