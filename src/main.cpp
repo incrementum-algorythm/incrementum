@@ -971,7 +971,7 @@ int64_t GetProofOfWorkReward(int64_t nFees)
 
     if(pindexBest->nHeight < 1)
     {
-        nSubsidy = 10000 * COIN;
+        nSubsidy = 1300000 * COIN;
     }
 
     if (fDebug && GetBoolArg("-printcreation"))
@@ -984,21 +984,7 @@ int64_t GetProofOfWorkReward(int64_t nFees)
 // miner's coin stake reward based on coin age spent (coin-days)
 int64_t GetProofOfStakeReward(int64_t nCoinAge, int64_t nFees)
 {
-    int64_t nSubsidy = nCoinAge * COIN_YEAR_REWARD * 33 / (365 * 33 + 8); // 10% Yearly interest
-
-    if(pindexBest->nHeight < 5000)
-    {
-        nSubsidy = nCoinAge * COIN_YEAR_REWARD * 33 / (365 * 33 + 8) * 1000;  // 10000% yearly interest
-    }
-    else if(pindexBest->nHeight < 10000)
-    {
-        nSubsidy = nCoinAge * COIN_YEAR_REWARD * 33 / (365 * 33 + 8) * 500;  // 5000% yearly interest
-    }
-    else if (pindexBest->nHeight > 10001)
-    {
-        nSubsidy = nCoinAge * COIN_YEAR_REWARD * 33 / (365 * 33 + 8) / 5;  // 2%% yearly interest
-    }
-    
+    int64_t nSubsidy = nCoinAge * COIN_YEAR_REWARD * 33 / (365 * 33 + 8); // 1% Yearly interest
 
     if (fDebug && GetBoolArg("-printcreation"))
         printf("GetProofOfStakeReward(): create=%s nCoinAge=%"PRId64"\n", FormatMoney(nSubsidy).c_str(), nCoinAge);
@@ -1102,6 +1088,22 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits)
     // Check proof of work matches claimed amount
     if (hash > bnTarget.getuint256())
         return error("CheckProofOfWork() : hash doesn't match nBits");
+
+    return true;
+}
+
+bool TryCheckProofOfWork(uint256 hash, unsigned int nBits)
+{
+    CBigNum bnTarget;
+    bnTarget.SetCompact(nBits);
+
+    // Check range
+    if (bnTarget <= 0 || bnTarget > bnProofOfWorkLimit)
+        return false;
+
+    // Check proof of work matches claimed amount
+    if (hash > bnTarget.getuint256())
+        return false;
 
     return true;
 }
@@ -2514,15 +2516,15 @@ bool LoadBlockIndex(bool fAllowNew)
             return false;
 
         //Genesis Block
-        //CBlock(hash=00000635f81db786bbddcb898180fc93b94aa69676ec22fb097b2690db77c6c2, ver=1, hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, hashMerkleRoot=f60957d31d42cb9e8e1a1afaaae043fd3f9424f6268dc80b4f38a89b73532b1e, nTime=1445990116, nBits=1e0fffff, nNonce=820430, vtx=1, vchBlockSig=)
-        //Coinbase(hash=f60957d31d, nTime=1445990116, ver=1, vin.size=1, vout.size=1, nLockTime=0)
-        //CTxIn(COutPoint(0000000000, 4294967295), coinbase 0411eb031d012c25687474703a2f2f7777772e6262632e636f2e756b2f6e6577732f756b2d3334363433373833)
+        //CBlock(hash=00000c920eb8281a760e99a39c37993efd914fb065574122c02a8ee3600dfadf, ver=1, hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, hashMerkleRoot=3512d84f061e6324c388f9ceb7426a65513c25ea810673bac63289c8bf56d2ee, nTime=1455474134, nBits=1e0fffff, nNonce=126257, vtx=1, vchBlockSig=)
+        //Coinbase(hash=3512d84f06, nTime=1455474134, ver=1, vin.size=1, vout.size=1, nLockTime=0)
+        //CTxIn(COutPoint(0000000000, 4294967295), coinbase 0411eb031d012c0a31342e30322e32303136)
         //CTxOut(empty)
-        //vMerkleTree: f60957d31d
+        //vMerkleTree: 3512d84f06
 
-        const char* pszTimestamp = "http://www.bbc.co.uk/news/uk-34643783";
+        const char* pszTimestamp = "14.02.2016";
         CTransaction txNew;
-        txNew.nTime = 1445990116;
+        txNew.nTime = 1455474134;
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         txNew.vin[0].scriptSig = CScript() << 486796049 << CBigNum(44) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
@@ -2532,18 +2534,19 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1445990116;
+        block.nTime    = 1455474134;
         block.nBits    = bnProofOfWorkLimit.GetCompact();
-        block.nNonce   = 820430;
+        block.nNonce   = 126257;
         if(fTestNet)
         {
-            block.nNonce   = 12743;
+            block.nNonce   = 14416;
         }
 
-        //// debug print
-        assert(block.hashMerkleRoot == uint256("0xf60957d31d42cb9e8e1a1afaaae043fd3f9424f6268dc80b4f38a89b73532b1e"));
+        //// debug print        
+        assert(block.hashMerkleRoot == uint256("0x3512d84f061e6324c388f9ceb7426a65513c25ea810673bac63289c8bf56d2ee"));
         block.print();
         assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
+
         assert(block.CheckBlock());
 
         // Start new block file
